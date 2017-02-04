@@ -19,9 +19,9 @@ import java.util.Map;
  * @author sjblair
  * @since 21/02/15
  */
-public class JSONParse {
+public final class JSONParse {
 
-    public JSONParse() {
+    private JSONParse() {
 
     }
 
@@ -30,7 +30,7 @@ public class JSONParse {
      * @param in JSON data returned from the DatamuseQuery class.
      * @return An array of the words.
      */
-    public String[] parseWords(String in) {
+    public static String[] parseWords(String in) {
         JsonParserFactory factory=JsonParserFactory.getInstance();
         JSONParser parser=factory.newJsonParser();
         Map jsonData=parser.parseJson(in);
@@ -47,7 +47,7 @@ public class JSONParse {
      * @param in JSON data returned from the DatamuseQuery class.
      * @return An array of the scores.
      */
-    public int[] parseScores(String in) {
+    public static int[] parseScores(String in) {
         JsonParserFactory factory=JsonParserFactory.getInstance();
         JSONParser parser=factory.newJsonParser();
         Map jsonData=parser.parseJson(in);
