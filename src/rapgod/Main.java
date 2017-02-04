@@ -9,7 +9,7 @@ import markov.Markov;
 public class Main {
   public static void main(String[] args) throws IOException {
     String corpus = new String(Files.readAllBytes(Paths.get(args[0])));
-    Markov chain = new Markov(corpus);
+    Markov chain = new Markov(corpus.replace(".", "\n"));
     System.out.println(chain.generateLine());
   }
 }

@@ -11,11 +11,12 @@ import java.util.Set;
 public class Markov {
   private String corpus;
   private Map<String, Map<String, List<String>>> chain = new HashMap<>();
-  private final int LINESIZE = 7;
+  private final int LINESIZE = 10;
 
   public Markov(String corpus) {
     this.corpus = corpus;
     triples();
+    //System.out.println(chain);
   }
 
   private void triples() {
@@ -47,6 +48,9 @@ public class Markov {
     StringBuilder genWords = new StringBuilder();
     for (int i = 0; i < LINESIZE; i++) {
       genWords.insert(0, word1);
+      if (chain.get(word1) == null || chain.get(word1).get(word2) == null) {
+        return generateLine();
+      }
       List<String> thirdWords = chain.get(word1).get(word2);
       String word3 = thirdWords.get(r.nextInt(thirdWords.size()));
       word1 = word2;
