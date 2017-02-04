@@ -21,7 +21,7 @@ public class Markov {
   private void triples() {
     List<String> lines = Arrays.asList(corpus.split("\n"));
     for (String line : lines) {
-      List<String> words = Arrays.asList(line.split(" "));
+      List<String> words = new ArrayList<>(Arrays.asList(line.split(" ")));
       words.add("*STOP*");
       words.add(0, "*START*");
       for (int i = words.size()-1; i > 1; i--) {
@@ -51,6 +51,7 @@ public class Markov {
       String word3 = thirdWords.get(r.nextInt(thirdWords.size()));
       word1 = word2;
       word2 = word3;
+      genWords.insert(0," ");
     }
     genWords.insert(0, word2);
     return genWords.toString();
