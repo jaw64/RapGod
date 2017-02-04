@@ -20,9 +20,9 @@ import java.net.URLConnection;
  * @author sjblair
  * @since 21/02/15
  */
-public final class DatamuseQuery {
+public final class Datamuse {
 
-    private DatamuseQuery() {}
+    private Datamuse() {}
 
     /**
      * Returns a list of similar words to the word/phrase supplied.
@@ -113,6 +113,47 @@ public final class DatamuseQuery {
         String s = word.replaceAll(" ", "+");
         return getJSON("http://api.datamuse.com/sug?s=" + s);
     }
+    
+    /**
+     * 
+     * @param word
+     * @return
+     */
+    public static String rhymesWith(String word) {
+    	String s = word.replaceAll(" ", "+");
+    	return getJSON("http://api.datamuse.com/words?rel_rhy=" + s);
+    }
+    
+    /**
+     * 
+     * @param word
+     * @return
+     */
+    public static String almostRhymesWith(String word) {
+    	String s = word.replaceAll(" ", "+");
+    	return getJSON("http://api.datamuse.com/words?rel_nry=" + s);
+    }
+    
+    /**
+     * 
+     * @param word
+     * @return
+     */
+    public static String frequentFollowers(String word) {
+    	String s = word.replaceAll(" ", "+");
+    	return getJSON("http://api.datamuse.com/words?rel_bga=" + s);
+    }
+    
+    /**
+     * 
+     * @param word
+     * @return
+     */
+    public static String frequentPredecessors(String word) {
+    	String s = word.replaceAll(" ", "+");
+    	return getJSON("http://api.datamuse.com/words?rel_bgb=" + s);
+    }
+    
 
     /**
      * Query a URL for their source code.
