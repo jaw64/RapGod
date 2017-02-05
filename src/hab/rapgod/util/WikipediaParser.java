@@ -8,6 +8,10 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
@@ -43,6 +47,16 @@ public final class WikipediaParser {
 		}
 		return s != null ? s.toString() : null;
 	}
+	
+	private static LinkedList<String> getLinks(String text) {
+		Pattern linkPattern = Pattern.compile("\\[\\[.*\\]\\]");
+		Matcher m = linkPattern.matcher(text);
+		LinkedList<String> list = new LinkedList<>();
+		while (m.find()) {
+			list.add(m.group(1));
+		}
+		return list;
+	}
 
 	public static String parseExtract(String json) {
 		JSONObject obj = new JSONObject(json);
@@ -56,6 +70,7 @@ public final class WikipediaParser {
 				"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&formatversion=2&explaintext=1&titles="
 						+ articleTitle);
 		text = parseExtract(text);
+		LinkedList<String> links = getLinks(text);
 		text = sanitizeInput(text);
 		BufferedWriter writer = new BufferedWriter(new FileWriter("./output.txt"));
 		writer.write(text);
