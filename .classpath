@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/quick-json-1.0.2.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/jaw64/prg/course/hab2017/RapGod/lib/json-20160810.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
