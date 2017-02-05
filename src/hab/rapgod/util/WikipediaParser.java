@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public final class WikipediaParser {
@@ -38,29 +39,65 @@ public final class WikipediaParser {
 				s.append(inputLine);
 			in.close();
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return s != null ? s.toString() : null;
 	}
 
-	public static String parseExtract(String json) throws JSONException {
+	private static String parseExtract(String json) throws Exception {
 		JSONObject obj = new JSONObject(json);
 		String ret = obj.getJSONObject("query").getJSONArray("pages").getJSONObject(0).getString("extract");
 		return ret;
 	}
 
-	public static String parseArticle(String articleTitle) throws IOException, JSONException {
+	private static String parseLinks(String json) throws Exception {
+		JSONObject obj = new JSONObject(json);
+		JSONObject pages = obj.getJSONObject("query").getJSONObject("pages");
+		String id = JSONObject.getNames(pages)[0];
+		JSONArray links = pages.getJSONObject(id).getJSONArray("links");
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < links.length(); i++) {
+			if (Math.random() < 0.05) {
+				String title = links.getJSONObject(i).getString("title");
+				String text = getCleanArticle(title);
+				if (text != null) {
+					try {
+						text = parseExtract(text);
+					} catch (Exception e) {
+						continue;
+					}
+					text = sanitizeInput(text);
+					sb.append(text);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String parseArticle(String articleTitle) throws Exception {
 		articleTitle = articleTitle.replaceAll("\\s+", "_");
-		String text = getJSON(
-				"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&formatversion=2&explaintext=1&titles="
-						+ articleTitle);
+		String text = getCleanArticle(articleTitle);
+		String dirtyText = getDirtyArticle(articleTitle);
 		text = parseExtract(text);
 		text = sanitizeInput(text);
+		dirtyText = parseLinks(dirtyText);
 		BufferedWriter writer = new BufferedWriter(new FileWriter("./output.txt"));
 		writer.write(text);
 		writer.close();
 		return text;
+	}
+
+	private static String getCleanArticle(String articleTitle) throws Exception {
+		return getJSON(
+				"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&formatversion=2&explaintext=1&titles="
+						+ articleTitle);
+	}
+
+	private static String getDirtyArticle(String articleTitle) throws Exception {
+		return getJSON(
+				"https://en.wikipedia.org/w/api.php?action=query&prop=info&prop=links&pllimit=max&format=json&titles="
+						+ articleTitle);
 	}
 }
