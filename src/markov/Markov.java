@@ -8,10 +8,16 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
+import datamuse.Datamuse;
+import datamuse.JSONParse;
+
+import com.json.exceptions.JSONParsingException;
+
 public class Markov {
   private String corpus;
   private Map<String, Map<String, List<String>>> chain = new HashMap<>();
-  private final int LINESIZE = 7;
+  private final int LINESIZE = 8;
+  private int lineCount = 0;
 
   public Markov(String corpus) {
     this.corpus = corpus;
@@ -39,21 +45,90 @@ public class Markov {
     }
   }
 
-  public String generateLine() {
+  public void generate(int lines) {
+    for (int i = 0; i < lines; i++) {
+      String firstLine = null;
+      while ((firstLine = generateLine("*STOP*")) == null) {
+      }
+      String[] rhymeWords = firstLine.split(" ");
+      String toRhyme = rhymeWords[rhymeWords.length - 1];
+
+      List<String> allRhymes = new ArrayList<>();
+      List<String> rhymes = new ArrayList<>();
+      List<String> almostRhymes = new ArrayList<>();
+      try {
+        rhymes = Arrays.asList(JSONParse.parseWords(Datamuse.rhymesWith(toRhyme)));
+        allRhymes.addAll(rhymes.subList(0, rhymes.size()/2));
+      } catch (JSONParsingException e){      
+      } finally {
+        try {
+          almostRhymes = Arrays.asList(JSONParse.parseWords(Datamuse.almostRhymesWith(toRhyme)));
+          allRhymes.addAll(almostRhymes.subList(0, almostRhymes.size()/2));
+        } catch (JSONParsingException e) {}
+      }
+      allRhymes.addAll(rhymes.subList(rhymes.size()/2, rhymes.size()));
+      allRhymes.addAll(almostRhymes.subList(almostRhymes.size()/2, almostRhymes.size()));
+      String word1 = null;
+      for (String rhyme : allRhymes) {
+        if (chain.get(rhyme) != null) {
+          word1 = rhyme;
+          break;
+        }
+      }
+      if (word1 == null) {
+        i--;
+        continue;
+      }
+
+      String secondLine = null;
+      while ((secondLine = generateLine(word1)) == null) {
+        allRhymes.remove(word1);
+        word1 = null;
+        for (String rhyme : allRhymes) {
+          if (chain.get(rhyme) != null) {
+            word1 = rhyme;
+            break;
+          }
+        }
+        if (word1 == null) {
+          i--;
+          break;
+        }
+      }
+
+      if (secondLine != null) {
+        System.out.println(firstLine);
+        System.out.println(secondLine);
+      }
+    }
+  }
+
+  private String generateLine(String word1) {
     Random r = new Random();
-    String word1 = "*STOP*";
     List<String> secondWords = new ArrayList<>(chain.get(word1).keySet());
     String word2 = secondWords.get(r.nextInt(secondWords.size()));
     StringBuilder genWords = new StringBuilder();
     for (int i = 0; i < LINESIZE; i++) {
-      genWords.insert(0, word1);
+      if (!word1.equals("*START*") && !word1.equals("*STOP*")) {
+        genWords.insert(0, word1);
+      }
+      if (chain.get(word1) == null || chain.get(word1).get(word2) == null) {
+        if (i > 4) {
+          return genWords.toString();
+        } else {
+          return null;
+        }
+      }
       List<String> thirdWords = chain.get(word1).get(word2);
       String word3 = thirdWords.get(r.nextInt(thirdWords.size()));
       word1 = word2;
       word2 = word3;
       genWords.insert(0," ");
     }
-    genWords.insert(0, word2);
+    if (!word2.equals("*START*") && !word2.equals("*STOP*")) {
+      genWords.insert(0, word2);
+    }
+
     return genWords.toString();
   }
 }
