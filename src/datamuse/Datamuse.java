@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /**
  * A handler for making calls to the Datamuse RESTful API.
@@ -179,5 +182,47 @@ public final class Datamuse {
             e.printStackTrace();
         }
         return s != null ? s.toString() : null;
+    }
+
+    public static int getSyllables(String word) {
+        Set<Character> vowels = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u', 'y'));
+        if (word == null) {
+            throw new NullPointerException("the word parameter was null.");
+        } else if (word.length() == 0) {
+            return 0;
+        } else if (word.length() == 1) {
+            return 1;
+        }
+
+        final String lowerCase = word.toLowerCase();
+
+        /*if (exceptions.containsKey(lowerCase)) {
+            return exceptions.get(lowerCase);
+        }*/
+
+        final String prunned;
+        if (lowerCase.charAt(lowerCase.length() - 1) == 'e') {
+            prunned = lowerCase.substring(0, lowerCase.length() - 1);
+        } else {
+            prunned = lowerCase;
+        }
+
+        int count = 0;
+        boolean prevIsVowel = false;
+        for (char c : prunned.toCharArray()) {
+            final boolean isVowel = vowels.contains(c);
+            if (isVowel && !prevIsVowel) {
+                ++count;
+            }
+            prevIsVowel = isVowel;
+        }
+        /*count += addSyls.stream()
+                .filter(pattern -> pattern.matcher(prunned).find())
+                .count();
+        count -= subSyls.stream()
+                .filter(pattern -> pattern.matcher(prunned).find())
+                .count();*/
+
+        return count > 0 ? count : 1;
     }
 }

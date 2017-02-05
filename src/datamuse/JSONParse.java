@@ -19,9 +19,9 @@ import java.util.Map;
  * @author sjblair
  * @since 21/02/15
  */
-public final class JSONParse {
+public class JSONParse {
 
-    private JSONParse() {
+    public JSONParse() {
 
     }
 

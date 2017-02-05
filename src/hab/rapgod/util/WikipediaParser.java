@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class WikipediaParser {
@@ -44,13 +45,13 @@ public final class WikipediaParser {
 		return s != null ? s.toString() : null;
 	}
 
-	public static String parseExtract(String json) {
+	public static String parseExtract(String json) throws JSONException {
 		JSONObject obj = new JSONObject(json);
 		String ret = obj.getJSONObject("query").getJSONArray("pages").getJSONObject(0).getString("extract");
 		return ret;
 	}
 
-	public static String parseArticle(String articleTitle) throws IOException {
+	public static String parseArticle(String articleTitle) throws IOException, JSONException {
 		articleTitle = articleTitle.replaceAll("\\s+", "_");
 		String text = getJSON(
 				"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&formatversion=2&explaintext=1&titles="

@@ -16,8 +16,8 @@ import com.json.exceptions.JSONParsingException;
 public class Markov {
   private String corpus;
   private Map<String, Map<String, List<String>>> chain = new HashMap<>();
-  private final int LINESIZE = 8;
-  private int lineCount = 0;
+  private final int MINLINELENGTH = 10;
+  private final int MAXLINELENGTH = 12;
 
   public Markov(String corpus) {
     this.corpus = corpus;
@@ -108,12 +108,13 @@ public class Markov {
     List<String> secondWords = new ArrayList<>(chain.get(word1).keySet());
     String word2 = secondWords.get(r.nextInt(secondWords.size()));
     StringBuilder genWords = new StringBuilder();
-    for (int i = 0; i < LINESIZE; i++) {
+    while (getSyllables(genWords.toString()) < MINLINELENGTH) {
       if (!word1.equals("*START*") && !word1.equals("*STOP*")) {
         genWords.insert(0, word1);
       }
       if (chain.get(word1) == null || chain.get(word1).get(word2) == null) {
-        if (i > 4) {
+        int syls = getSyllables(genWords.toString());
+        if (syls > MINLINELENGTH && syls < MAXLINELENGTH) {
           return genWords.toString();
         } else {
           return null;
@@ -129,6 +130,21 @@ public class Markov {
       genWords.insert(0, word2);
     }
 
-    return genWords.toString();
+    int syls = getSyllables(genWords.toString());
+    if (syls > MINLINELENGTH && syls < MAXLINELENGTH) {
+      return genWords.toString();
+    } else {
+      return null;
+    }
+  }
+
+  private int getSyllables(String line) {
+    int sum = 0;
+    String[] lines = line.split(" ");
+    for (int i = 0; i < lines.length; i++) {
+      sum += Datamuse.getSyllables(lines[i]);
+    }
+
+    return sum;
   }
 }
