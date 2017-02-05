@@ -46,53 +46,67 @@ public class Markov {
   }
 
   public void generate(int lines) {
-    while (lineCount < lines) {
-      generateLine();
-    }
-  }
+    for (int i = 0; i < lines; i++) {
+      String firstLine = null;
+      while ((firstLine = generateLine("*STOP*")) == null) {
+      }
+      String[] rhymeWords = firstLine.split(" ");
+      String toRhyme = rhymeWords[rhymeWords.length - 1];
 
-  private void generateLine() {
-    Random r = new Random();
-    String word1 = "*STOP*";
-    List<String> secondWords = new ArrayList<>(chain.get(word1).keySet());
-    String word2 = secondWords.get(r.nextInt(secondWords.size()));
-    String toRhyme = word2;
-    System.out.println(generateWords(word1, word2));
-    generateRhymeLine(toRhyme);
-    lineCount++;
-  }
-
-  private void generateRhymeLine(String word) {
-    Random r = new Random();
-    List<String> allRhymes = new ArrayList<>();
-    List<String> rhymes = new ArrayList<>();
-    List<String> almostRhymes = new ArrayList<>();
-    try {
-      rhymes = Arrays.asList(JSONParse.parseWords(Datamuse.rhymesWith(word)));
-      allRhymes.addAll(rhymes.subList(0, rhymes.size()/2));
-    } catch (JSONParsingException e){      
-    } finally {
+      List<String> allRhymes = new ArrayList<>();
+      List<String> rhymes = new ArrayList<>();
+      List<String> almostRhymes = new ArrayList<>();
       try {
-        almostRhymes = Arrays.asList(JSONParse.parseWords(Datamuse.almostRhymesWith(word)));
-        allRhymes.addAll(almostRhymes.subList(0, almostRhymes.size()/2));
-      } catch (JSONParsingException e) {}
-    }
-    allRhymes.addAll(rhymes.subList(rhymes.size()/2, rhymes.size()));
-    allRhymes.addAll(almostRhymes.subList(almostRhymes.size()/2, almostRhymes.size()));
-    String word1 = "*STOP*";
-    for (String rhyme : allRhymes) {
-      if (chain.get(rhyme) != null) {
-        word1 = rhyme;
-        break;
+        rhymes = Arrays.asList(JSONParse.parseWords(Datamuse.rhymesWith(toRhyme)));
+        allRhymes.addAll(rhymes.subList(0, rhymes.size()/2));
+      } catch (JSONParsingException e){      
+      } finally {
+        try {
+          almostRhymes = Arrays.asList(JSONParse.parseWords(Datamuse.almostRhymesWith(toRhyme)));
+          allRhymes.addAll(almostRhymes.subList(0, almostRhymes.size()/2));
+        } catch (JSONParsingException e) {}
+      }
+      allRhymes.addAll(rhymes.subList(rhymes.size()/2, rhymes.size()));
+      allRhymes.addAll(almostRhymes.subList(almostRhymes.size()/2, almostRhymes.size()));
+      String word1 = null;
+      for (String rhyme : allRhymes) {
+        if (chain.get(rhyme) != null) {
+          word1 = rhyme;
+          break;
+        }
+      }
+      if (word1 == null) {
+        i--;
+        continue;
+      }
+
+      String secondLine = null;
+      while ((secondLine = generateLine(word1)) == null) {
+        allRhymes.remove(word1);
+        word1 = null;
+        for (String rhyme : allRhymes) {
+          if (chain.get(rhyme) != null) {
+            word1 = rhyme;
+            break;
+          }
+        }
+        if (word1 == null) {
+          i--;
+          break;
+        }
+      }
+
+      if (secondLine != null) {
+        System.out.println(firstLine);
+        System.out.println(secondLine);
       }
     }
-    List<String> secondWords = new ArrayList<>(chain.get(word1).keySet());
-    String word2 = secondWords.get(r.nextInt(secondWords.size()));
-    System.out.println(generateWords(word1, word2));
   }
 
-  private String generateWords(String word1, String word2) {
+  private String generateLine(String word1) {
     Random r = new Random();
+    List<String> secondWords = new ArrayList<>(chain.get(word1).keySet());
+    String word2 = secondWords.get(r.nextInt(secondWords.size()));
     StringBuilder genWords = new StringBuilder();
     for (int i = 0; i < LINESIZE; i++) {
       if (!word1.equals("*START*") && !word1.equals("*STOP*")) {
@@ -102,9 +116,7 @@ public class Markov {
         if (i > 4) {
           return genWords.toString();
         } else {
-          //lineCount--;
-          generateLine();
-          return "";
+          return null;
         }
       }
       List<String> thirdWords = chain.get(word1).get(word2);
@@ -114,8 +126,9 @@ public class Markov {
       genWords.insert(0," ");
     }
     if (!word2.equals("*START*") && !word2.equals("*STOP*")) {
-        genWords.insert(0, word2);
-      }
+      genWords.insert(0, word2);
+    }
+
     return genWords.toString();
   }
 }
